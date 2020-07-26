@@ -2,10 +2,13 @@
 
 import os
 import json
+import hashlib
 import urllib.request
 
+OUTPUT_FILENAME = "all-kokuarea.geojson"
 
-def union_geojson():
+
+def download_geojson():
 
     urls = [
         "https://maps.gsi.go.jp/xyz/kokuarea/8/215/110.geojson",
@@ -74,28 +77,46 @@ def union_geojson():
         "https://maps.gsi.go.jp/xyz/kokuarea/8/231/93.geojson",
     ]
 
-    DOWNLOAD_FILENAME = "download.geojson"
+    filenames = []
+
+    for url in urls:
+        filename = hashlib.md5(url.encode()).hexdigest() + ".geojson"
+        urllib.request.urlretrieve(url, filename)
+        filenames.append(filename)
+        print("download", url, "to", filename)
+
+    return filenames
+
+
+def union_geojson(filenames):
 
     kokuareas = {"type": "FeatureCollection",    "features": []}
 
-    for url in urls:
-        print(url)
-
-        urllib.request.urlretrieve(url, DOWNLOAD_FILENAME)
-
-        with open(DOWNLOAD_FILENAME, 'r') as file:
+    for filename in filenames:
+        with open(filename, 'r') as file:
             t = json.load(file)
 
         for feature in t["features"]:
             kokuareas["features"].append(feature)
 
-    os.remove(DOWNLOAD_FILENAME)
+        print("union", filename)
 
     return kokuareas
 
 
-if __name__ == "__main__":
-    kokuareas = union_geojson()
+def remove(filenames):
 
-    with open("all-kokuarea.geojson", 'w') as file:
+    for filename in filenames:
+        os.remove(filename)
+        print("remove", filename)
+
+
+if __name__ == "__main__":
+    filenames = download_geojson()
+    kokuareas = union_geojson(filenames)
+    remove(filenames)
+
+    with open(OUTPUT_FILENAME, 'w') as file:
         json.dump(kokuareas, file, ensure_ascii=False)
+
+    print("output", OUTPUT_FILENAME)
