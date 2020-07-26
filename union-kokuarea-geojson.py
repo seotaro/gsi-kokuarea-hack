@@ -8,7 +8,7 @@ import urllib.request
 OUTPUT_FILENAME = "all-kokuarea.geojson"
 
 
-def download_geojson():
+def download_geojsons():
 
     urls = [
         "https://maps.gsi.go.jp/xyz/kokuarea/8/215/110.geojson",
@@ -88,7 +88,7 @@ def download_geojson():
     return filenames
 
 
-def union_geojson(filenames):
+def union_geojsons(filenames):
 
     kokuareas = {"type": "FeatureCollection",    "features": []}
 
@@ -104,7 +104,7 @@ def union_geojson(filenames):
     return kokuareas
 
 
-def remove(filenames):
+def remove_files(filenames):
 
     for filename in filenames:
         os.remove(filename)
@@ -112,9 +112,9 @@ def remove(filenames):
 
 
 if __name__ == "__main__":
-    filenames = download_geojson()
-    kokuareas = union_geojson(filenames)
-    remove(filenames)
+    filenames = download_geojsons()
+    kokuareas = union_geojsons(filenames)
+    remove_files(filenames)
 
     with open(OUTPUT_FILENAME, 'w') as file:
         json.dump(kokuareas, file, ensure_ascii=False)
